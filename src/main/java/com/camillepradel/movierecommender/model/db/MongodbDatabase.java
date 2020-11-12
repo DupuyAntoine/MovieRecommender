@@ -12,7 +12,7 @@ public class MongodbDatabase extends AbstractDatabase {
     @Override
     public List<Movie> getAllMovies() {
         // TODO: write query to retrieve all movies from DB
-        List<Movie> movies = new LinkedList<Movie>();
+        List<Movie> movies = new LinkedList<>();
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         Genre genre2 = new Genre(2, "genre2");
@@ -26,7 +26,7 @@ public class MongodbDatabase extends AbstractDatabase {
     @Override
     public List<Movie> getMoviesRatedByUser(int userId) {
         // TODO: write query to retrieve all movies rated by user with id userId
-        List<Movie> movies = new LinkedList<Movie>();
+        List<Movie> movies = new LinkedList<>();
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         Genre genre2 = new Genre(2, "genre2");
@@ -38,7 +38,7 @@ public class MongodbDatabase extends AbstractDatabase {
     @Override
     public List<Rating> getRatingsFromUser(int userId) {
         // TODO: write query to retrieve all ratings from user with id userId
-        List<Rating> ratings = new LinkedList<Rating>();
+        List<Rating> ratings = new LinkedList<>();
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         ratings.add(new Rating(new Movie(0, "Titre 0", Arrays.asList(new Genre[]{genre0, genre1})), userId, 3));
@@ -60,16 +60,21 @@ public class MongodbDatabase extends AbstractDatabase {
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         Genre genre2 = new Genre(2, "genre2");
-        List<Rating> recommendations = new LinkedList<Rating>();
+        List<Rating> recommendations = new LinkedList<>();
         String titlePrefix;
-        if (processingMode == 0) {
-            titlePrefix = "0_";
-        } else if (processingMode == 1) {
-            titlePrefix = "1_";
-        } else if (processingMode == 2) {
-            titlePrefix = "2_";
-        } else {
-            titlePrefix = "default_";
+        switch (processingMode) {
+            case 0:
+                titlePrefix = "0_";
+                break;
+            case 1:
+                titlePrefix = "1_";
+                break;
+            case 2:
+                titlePrefix = "2_";
+                break;
+            default:
+                titlePrefix = "default_";
+                break;
         }
         recommendations.add(new Rating(new Movie(0, titlePrefix + "Titre 0", Arrays.asList(new Genre[]{genre0, genre1})), userId, 5));
         recommendations.add(new Rating(new Movie(1, titlePrefix + "Titre 1", Arrays.asList(new Genre[]{genre0, genre2})), userId, 5));

@@ -3,7 +3,6 @@ package com.camillepradel.movierecommender.model.db;
 import com.camillepradel.movierecommender.model.Genre;
 import com.camillepradel.movierecommender.model.Movie;
 import com.camillepradel.movierecommender.model.Rating;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -14,11 +13,7 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Result;
-import org.neo4j.driver.Transaction;
-import org.neo4j.driver.TransactionWork;
 import org.neo4j.driver.Value;
-
-import static org.neo4j.driver.Values.parameters;
 
 
 public class Neo4jDatabase extends AbstractDatabase implements AutoCloseable {
@@ -125,23 +120,20 @@ public class Neo4jDatabase extends AbstractDatabase implements AutoCloseable {
         int userId = rating.getUserId();
         int note = rating.getScore();
         try (Session session = driver.session()) {
-            session.writeTransaction(new TransactionWork<Integer>() {
-                @Override
-                public Integer execute(Transaction tx) {
-                    Boolean isAlreadyExists = isRatingAlreadyExists(userId, movieId);
-                    if (isAlreadyExists) {
-                        tx.run("MATCH (:User {id:" + Integer.toString(userId) + "})"
-                                + "-[r:RATED]->(:Movie {id:" + Integer.toString(movieId) + "}) "
-                                + "SET r.note = " + note);
-                    } else {
-                        Date date = new Date();
-                        tx.run("MATCH (u:User {id:" + Integer.toString(userId) + "}),"
-                                + "(m:Movie {id:" + Integer.toString(movieId) + "}) "
-                                + "CREATE (u)-[r:RATED { note: " + note + ", "
-                                + "timestamp: " + date.getTime() + "}]->(m) " );
-                    }
-                    return 1;
+            session.writeTransaction(tx -> {
+                Boolean isAlreadyExists = isRatingAlreadyExists(userId, movieId);
+                if (isAlreadyExists) {
+                    tx.run("MATCH (:User {id:" + Integer.toString(userId) + "})"
+                            + "-[r:RATED]->(:Movie {id:" + Integer.toString(movieId) + "}) "
+                                    + "SET r.note = " + note);
+                } else {
+                    Date date = new Date();
+                    tx.run("MATCH (u:User {id:" + Integer.toString(userId) + "}),"
+                            + "(m:Movie {id:" + Integer.toString(movieId) + "}) "
+                                    + "CREATE (u)-[r:RATED { note: " + note + ", "
+                                            + "timestamp: " + date.getTime() + "}]->(m) " );
                 }
+                return 1;
             });
         }
         
@@ -168,16 +160,21 @@ public class Neo4jDatabase extends AbstractDatabase implements AutoCloseable {
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         Genre genre2 = new Genre(2, "genre2");
-        List<Rating> recommendations = new LinkedList<Rating>();
+        List<Rating> recommendations = new LinkedList<>();
         String titlePrefix;
-        if (processingMode == 0) {
-            titlePrefix = "0_";
-        } else if (processingMode == 1) {
-            titlePrefix = "1_";
-        } else if (processingMode == 2) {
-            titlePrefix = "2_";
-        } else {
-            titlePrefix = "default_";
+        switch (processingMode) {
+            case 0:
+                titlePrefix = "0_";
+                break;
+            case 1:
+                titlePrefix = "1_";
+                break;
+            case 2:
+                titlePrefix = "2_";
+                break;
+            default:
+                titlePrefix = "default_";
+                break;
         }
         recommendations.add(new Rating(new Movie(0, titlePrefix + "Titre 0", Arrays.asList(new Genre[]{genre0, genre1})), userId, 5));
         recommendations.add(new Rating(new Movie(1, titlePrefix + "Titre 1", Arrays.asList(new Genre[]{genre0, genre2})), userId, 5));

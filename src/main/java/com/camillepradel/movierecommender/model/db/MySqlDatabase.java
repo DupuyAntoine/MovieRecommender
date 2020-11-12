@@ -31,13 +31,11 @@ public class MySqlDatabase extends AbstractDatabase {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
         }
 
         try {
             connection = DriverManager.getConnection(url, login, password);
         } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -58,7 +56,7 @@ public class MySqlDatabase extends AbstractDatabase {
 
     @Override
     public List<Movie> getAllMovies() {
-        List<Movie> movies = new LinkedList<Movie>();
+        List<Movie> movies = new LinkedList<>();
 
         if (connection != null) {
             try {
@@ -89,7 +87,7 @@ public class MySqlDatabase extends AbstractDatabase {
 
     @Override
     public List<Movie> getMoviesRatedByUser(int userId) {
-        List<Movie> movies = new LinkedList<Movie>();
+        List<Movie> movies = new LinkedList<>();
 
         if (connection != null) {
             try {
@@ -121,7 +119,7 @@ public class MySqlDatabase extends AbstractDatabase {
 
     @Override
     public List<Rating> getRatingsFromUser(int userId) {
-        List<Rating> ratings = new LinkedList<Rating>();
+        List<Rating> ratings = new LinkedList<>();
 
         if (connection != null) {
             try {
@@ -175,16 +173,21 @@ public class MySqlDatabase extends AbstractDatabase {
         Genre genre0 = new Genre(0, "genre0");
         Genre genre1 = new Genre(1, "genre1");
         Genre genre2 = new Genre(2, "genre2");
-        List<Rating> recommendations = new LinkedList<Rating>();
+        List<Rating> recommendations = new LinkedList<>();
         String titlePrefix;
-        if (processingMode == 0) {
-            titlePrefix = "0_";
-        } else if (processingMode == 1) {
-            titlePrefix = "1_";
-        } else if (processingMode == 2) {
-            titlePrefix = "2_";
-        } else {
-            titlePrefix = "default_";
+        switch (processingMode) {
+            case 0:
+                titlePrefix = "0_";
+                break;
+            case 1:
+                titlePrefix = "1_";
+                break;
+            case 2:
+                titlePrefix = "2_";
+                break;
+            default:
+                titlePrefix = "default_";
+                break;
         }
         recommendations.add(new Rating(new Movie(0, titlePrefix + "Titre 0", Arrays.asList(new Genre[]{genre0, genre1})), userId, 5));
         recommendations.add(new Rating(new Movie(1, titlePrefix + "Titre 1", Arrays.asList(new Genre[]{genre0, genre2})), userId, 5));
