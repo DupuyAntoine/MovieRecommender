@@ -13,8 +13,8 @@ import com.camillepradel.movierecommender.model.Movie;
 import com.camillepradel.movierecommender.model.Rating;
 import com.camillepradel.movierecommender.model.db.AbstractDatabase;
 import com.camillepradel.movierecommender.model.db.MySqlDatabase;
-//import com.camillepradel.movierecommender.model.db.Neo4jDatabase;
-//import com.camillepradel.movierecommender.model.db.MongodbDatabase;
+import com.camillepradel.movierecommender.model.db.Neo4jDatabase;
+import com.camillepradel.movierecommender.model.db.MongodbDatabase;
 import javax.annotation.PostConstruct;
 
 @Controller
@@ -24,8 +24,8 @@ public class MainController {
 
     @PostConstruct
     public void init() {
-        this.db = new MySqlDatabase();
-//        this.db = new Neo4jDatabase();
+//        this.db = new MySqlDatabase();
+        this.db = new Neo4jDatabase("bolt://localhost:7687", "neo4j", "password");
 //        this.db = new MongodbDatabase();
     }
     
