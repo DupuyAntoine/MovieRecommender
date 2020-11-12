@@ -3,7 +3,9 @@ package com.camillepradel.movierecommender.model.db;
 import com.camillepradel.movierecommender.model.Genre;
 import com.camillepradel.movierecommender.model.Movie;
 import com.camillepradel.movierecommender.model.Rating;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.neo4j.driver.AuthTokens;
@@ -119,9 +121,44 @@ public class Neo4jDatabase extends AbstractDatabase implements AutoCloseable {
     public void addOrUpdateRating(Rating rating) {
         // EXAMPLE TRUE : RETURN EXISTS( (:User{id:8})-[:RATED]->(:Movie{id:7}) )
         // EXAMPLE FALSE : RETURN EXISTS( (:User{id:8})-[:RATED]->(:Movie{id:1}) )
+        int movieId = rating.getMovieId();
+        int userId = rating.getUserId();
+        int note = rating.getScore();
+        try (Session session = driver.session()) {
+            session.writeTransaction(new TransactionWork<Integer>() {
+                @Override
+                public Integer execute(Transaction tx) {
+                    Boolean isAlreadyExists = isRatingAlreadyExists(userId, movieId);
+                    if (isAlreadyExists) {
+                        tx.run("MATCH (:User {id:" + Integer.toString(userId) + "})"
+                                + "-[r:RATED]->(:Movie {id:" + Integer.toString(movieId) + "}) "
+                                + "SET r.note = " + note);
+                    } else {
+                        Date date = new Date();
+                        tx.run("MATCH (u:User {id:" + Integer.toString(userId) + "}),"
+                                + "(m:Movie {id:" + Integer.toString(movieId) + "}) "
+                                + "CREATE (u)-[r:RATED { note: " + note + ", "
+                                + "timestamp: " + date.getTime() + "}]->(m) " );
+                    }
+                    return 1;
+                }
+            });
+        }
+        
         // TODO: add query which
         //         - add rating between specified user and movie if it doesn't exist
         //         - update it if it does exist
+    }
+    
+    public Boolean isRatingAlreadyExists(int userId, int movieId) {
+        try (Session session = driver.session()) {
+            return session.readTransaction(tx -> {
+                Result result = tx.run(
+                        "RETURN EXISTS( (:User{id:" + Integer.toString(userId) + "})"
+                                + "-[:RATED]->(:Movie{id:" + Integer.toString(movieId) + "}) )");
+                return result.next().get(0).asBoolean();
+            });
+        }
     }
 
     @Override
