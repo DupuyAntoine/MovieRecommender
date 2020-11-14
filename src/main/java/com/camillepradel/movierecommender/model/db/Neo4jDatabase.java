@@ -136,10 +136,6 @@ public class Neo4jDatabase extends AbstractDatabase implements AutoCloseable {
                 return 1;
             });
         }
-        
-        // TODO: add query which
-        //         - add rating between specified user and movie if it doesn't exist
-        //         - update it if it does exist
     }
     
     public Boolean isRatingAlreadyExists(int userId, int movieId) {
